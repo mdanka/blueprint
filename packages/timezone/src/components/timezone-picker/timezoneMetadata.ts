@@ -14,36 +14,37 @@
  * limitations under the License.
  */
 
-import * as moment from "moment-timezone";
-
-// non-empty abbreviations that do not begin with -/+
-const ABBR_REGEX = /^[^-+]/;
+import * as timezoneMetadataJson from "../../generated/timezoneMetadata.json";
 
 export interface ITimezoneMetadata {
     timezone: string;
-    abbreviation: string | undefined;
+    abbreviation?: string;
     offset: number;
     offsetAsString: string;
-    population: number | undefined;
+    population?: number;
 }
 
-export function getTimezoneMetadata(timezone: string, date: Date = new Date()): ITimezoneMetadata {
-    const timestamp = date.getTime();
-    const zone = moment.tz.zone(timezone);
-    const zonedDate = moment.tz(timestamp, timezone);
-    const offset = zonedDate.utcOffset();
-    const offsetAsString = zonedDate.format("Z");
+const ALL_TIMEZONE_METADATA: ITimezoneMetadata[] = timezoneMetadataJson;
 
-    // Only include abbreviations that are not just a repeat of the offset:
-    // moment-timezone's `abbr` falls back to the time offset if a zone doesn't have an abbr.
-    const abbr = zone.abbr(timestamp);
-    const abbreviation = ABBR_REGEX.test(abbr) ? abbr : undefined;
+const ALL_TIMEZONE_NAMES = ALL_TIMEZONE_METADATA.map(metadata => metadata.timezone);
 
-    return {
-        abbreviation,
-        offset,
-        offsetAsString,
-        population: zone.population,
-        timezone,
-    };
+const TIMEZONE_TO_METADATA = ALL_TIMEZONE_METADATA.reduce<{ [timezone: string]: ITimezoneMetadata }>(
+    (store, metadata) => {
+        const { timezone } = metadata;
+        store[timezone] = metadata;
+        return store;
+    },
+    {},
+);
+
+export function getAllTimezoneMetadata(): ITimezoneMetadata[] {
+    return ALL_TIMEZONE_METADATA;
+}
+
+export function getAllTimezoneNames(): string[] {
+    return ALL_TIMEZONE_NAMES;
+}
+
+export function getTimezoneMetadata(timezone: string): ITimezoneMetadata | undefined {
+    return TIMEZONE_TO_METADATA[timezone];
 }

@@ -15,8 +15,12 @@
  */
 
 import { IconName } from "@blueprintjs/core";
-import * as moment from "moment-timezone";
-import { getTimezoneMetadata, ITimezoneMetadata } from "./timezoneMetadata";
+import {
+    getAllTimezoneMetadata,
+    getAllTimezoneNames,
+    getTimezoneMetadata,
+    ITimezoneMetadata,
+} from "./timezoneMetadata";
 import { guessTimeZone } from "./timezoneUtils";
 
 /** Timezone-specific QueryList item */
@@ -41,10 +45,8 @@ export interface ITimezoneItem {
  * Get a list of all timezone items.
  * @param date the date to use when determining timezone offsets
  */
-export function getTimezoneItems(date: Date): ITimezoneItem[] {
-    return moment.tz
-        .names()
-        .map(timezone => getTimezoneMetadata(timezone, date))
+export function getTimezoneItems(): ITimezoneItem[] {
+    return getAllTimezoneMetadata()
         .sort((a, b) => a.offset - b.offset)
         .map(toTimezoneItem);
 }
@@ -89,12 +91,12 @@ export function getLocalTimezoneItem(date: Date): ITimezoneItem | undefined {
  * than one region for the offset.
  * @param date the date to use when determining timezone offsets
  */
-function getPopulousTimezoneItems(date: Date): ITimezoneItem[] {
+function getPopulousTimezoneItems(): ITimezoneItem[] {
     // Filter out noisy timezones. See https://github.com/moment/moment-timezone/issues/227
-    const timezones = moment.tz.names().filter(timezone => /\//.test(timezone) && !/Etc\//.test(timezone));
+    const timezones = getAllTimezoneNames().filter(timezone => /\//.test(timezone) && !/Etc\//.test(timezone));
 
     const timezoneToMetadata = timezones.reduce<{ [timezone: string]: ITimezoneMetadata }>((store, zone) => {
-        store[zone] = getTimezoneMetadata(zone, date);
+        store[zone] = getTimezoneMetadata(zone);
         return store;
     }, {});
 

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as moment from "moment-timezone";
 import { getTimezoneMetadata } from "./timezoneMetadata";
 
 export type TimezoneDisplayFormat = "offset" | "abbreviation" | "name" | "composite";
@@ -29,12 +28,16 @@ export const TimezoneDisplayFormat = {
     OFFSET: "offset" as "offset",
 };
 
-export function formatTimezone(timezone: string, date: Date, displayFormat: TimezoneDisplayFormat): string | undefined {
-    if (!timezone || !moment.tz.zone(timezone)) {
+export function formatTimezone(timezone: string, displayFormat: TimezoneDisplayFormat): string | undefined {
+    if (!timezone) {
+        return undefined;
+    }
+    const timezoneMetadata = getTimezoneMetadata(timezone);
+    if (!timezoneMetadata) {
         return undefined;
     }
 
-    const { abbreviation, offsetAsString } = getTimezoneMetadata(timezone, date);
+    const { abbreviation, offsetAsString } = timezoneMetadata;
     switch (displayFormat) {
         case TimezoneDisplayFormat.ABBREVIATION:
             // Fall back to the offset when there is no abbreviation.

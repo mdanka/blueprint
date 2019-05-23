@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export * from "./timezone-picker/timezoneMetadata";
+export * from "../../buildSrc/generateTimezoneMetadata";
 export * from "./timezone-picker/timezonePicker";
